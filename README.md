@@ -152,7 +152,7 @@ hug-project-3/
 
    Upon successful deployment of the webserver, a script automatically runs to create a custom html page. The IP address and the URL are displayed on the terminal and could be accessed with a browser.
 
-   !["webpage"](./images/Webpage.png)
+   !["webpage"](./images/webpage.png)
 
 ## Challenges... Lessons...
 - As with the other two projects, the project scope was AWS-flavoured and so to achieve the project in Azure, a reconciliation of the terms and Azure-specific requirements was needed. 
