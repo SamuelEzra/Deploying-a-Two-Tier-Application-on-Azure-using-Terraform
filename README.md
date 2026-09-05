@@ -1,9 +1,54 @@
-# HUG Lagos/Ibadan Terraform Challenge – Week Three Project
-
-## Project 3: Deploy a Two-Tier Application on Azure
+# Deploy a Two-Tier Application on Azure
 
 ### Objective
 Provision a secure, two-tier environment on Azure using Terraform that follows infrastructure best practices.
+
+---
+
+## Architecture
+
+The project was broken down into five modules: resource_group, network, compute, database, security - each consisting of the main.tf, variables.tf, and outputs.tf files. In addition, the compute module contained a startup script for deploying a simple html page.
+
+```bash
+hug-project-3/
+│
+├── backend.tf
+├── provider.tf
+├── main.tf
+├── variables.tf
+├── outputs.tf
+├── terraform.tfvars
+├── .gitignore
+├── README.md
+│
+└── modules/
+    │
+    ├── resource_group/
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    │
+    ├── network/
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    │
+    ├── security/
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    │
+    ├── compute/
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   ├── outputs.tf
+    │   └── user_data.sh
+    │
+    └── database/
+        ├── main.tf
+        ├── variables.tf
+        └── outputs.tf
+```
 
 ---
 
@@ -45,7 +90,7 @@ Provision a secure, two-tier environment on Azure using Terraform that follows i
 ---
 
 ## Project Structure
-- `modules/` → reusable Terraform modules (network, compute, database, security)
+- `modules/` → reusable Terraform modules (resource_group, network, compute, database, security)
 - `variables.tf` → input variables
 - `outputs.tf` → outputs for resource references
 - `main.tf` → root configuration
@@ -57,41 +102,82 @@ Provision a secure, two-tier environment on Azure using Terraform that follows i
 ## Deployment Instructions
 1. Clone the repository:
    ```bash
-   git clone <repo-url>
+   git clone git@github.com:SamuelEzra/Building-Reusable-Infrastructure-with-Terraform-Modules.git
    cd project3
+   ```
 
-- Initialize Terraform:
+2. Initialize Terraform:
 
-```
-terraform init
-```
-- Validate configuration:
-```
-terraform validate
-```
-- Apply configuration:
-```
-terraform apply
-```
-- Destroy resources when done:
-```
-terraform destroy
-```
+   ```bash
+   terraform init
+   ```
+3. Validate configuration:
 
-### Results
+   ```bash
+   terraform validate
+   ```
+4. Apply configuration:
+
+   ```bash
+   terraform apply
+   ```
+5. Destroy resources when done:
+
+   ```bash
+   terraform destroy
+   ```
+
+## Results
 
 - Virtual Network
 
-!["webserver"](./vnet.png/Web-project2.png)
+   The virtual network is the network boundary for this project. Two subnets were created in this virtual network. One (the public subnet) for the webserver and (the private subnet) for database server.
 
-- Server Running
+   !["virtual_network"](./images/vnet.png)
 
-!["webserver"](./images/Web-project2.png)
+- Running Server
+
+   After successful deployment, the the webserver shows the status as "Running" and outputs the public IP address for connection via a browser.
+
+   !["webserver"](./images/vm.png)
 
 - Database Server
 
-!["webserver"](./images/Web-project2.png)
+   The database server is also successfully deployed.
+   It indicates a ready state.
+
+   !["database"](./images/sql.png)
 
 - Webpage
 
-!["webserver"](./images/Web-project2.png)
+   Upon successful deployment of the webserver, a script automatically runs to create a custom html page. The IP address and the URL are displayed on the terminal and could be accessed with a browser.
+
+   !["webpage"](./images/Webpage.png)
+
+## Challenges... Lessons...
+- As with the other two projects, the project scope was AWS-flavoured and so to achieve the project in Azure, a reconciliation of the terms and Azure-specific requirements was needed. 
+
+- I had subscription restrictions while attempting to use Postgresql Flexible Server. Also, I had restrictions while attempting to provision mySQL Flexible Server in some regions. Hence, the regoin I used for this project is different frm the first two projects in this series.
+
+- I encountered issues with the name I used while attempting to create the Private DNS Zone. Although the private DNS zone must end with ***mysql.database.azure.com***, Azure currently does not support using the server name directly as the private DNS zone in this form.
+
+   So, for a Private DNS Zone, this is NOT acceptable:
+
+   ```bash
+   resource "azurerm_private_dns_zone" "dns_zone" {
+   name                = "${var.db_name}.mysql.database.azure.com"
+   resource_group_name = var.rg
+   }
+   ```
+
+   But this is:
+
+   ```sh
+   resource "azurerm_private_dns_zone" "dns_zone" {
+   name                = "${var.db_name}.private.mysql.database.azure.com"
+   resource_group_name = var.rg
+   }
+   ```
+   Midpoint, I had to make changes to the name and then did ***terraform apply*** to complete deployment.
+
+- Errors in declaring variables in the individual modules and the root module.entation, I will try to add tags to some resources.
